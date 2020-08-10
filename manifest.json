@@ -1,0 +1,21 @@
+{
+	"name": "Spotify Mini Player",
+	"version": "1.0",
+	"description": "A player that lets you work without hassle",
+	"manifest_version": 2,
+	
+	"browser_action": {
+		"default_popup": "design.html"
+	},
+	
+	"background": {
+		"persistent": false,
+		"scipts": ["scipts/background.js","scripts/main.js"]
+	},
+	
+	"permissions": {
+		"storage",
+		"contextMenus",
+		"activeTab"
+	}
+}
