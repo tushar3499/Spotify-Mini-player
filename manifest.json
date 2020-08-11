@@ -8,14 +8,10 @@
 		"default_popup": "design.html"
 	},
 	
-	"background": {
-		"persistent": false,
-		"scipts": ["scipts/background.js","scripts/main.js"]
-	},
-	
-	"permissions": {
+	"permissions": [
 		"storage",
 		"contextMenus",
-		"activeTab"
-	}
+		"activeTab",
+		"tabs"
+	]
 }
