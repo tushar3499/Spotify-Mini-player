@@ -12,6 +12,7 @@
 		"storage",
 		"contextMenus",
 		"activeTab",
-		"tabs"
+		"tabs",
+		"https://open.spotify.com/*"
 	]
 }
