@@ -14,22 +14,6 @@ selectors = {
 }
 var spotify_tabs = [];
 
-function playPause(){
-    
-    chrome.tabs.executeScript(
-        spotify_tabs[0].id,
-        {
-            code: `document.querySelector('${selectors.play}').className`,
-        },
-        (result)=>{
-            /*if(result.length==0) document.getElementById("Present").innerHTML = "Playing";
-            else document.getElementById("Present").innerHTML = "Paused";*/
-            if(result[0].includes("pause") ) document.getElementById("Present").innerHTML = "Playing";
-            else document.getElementById("Present").innerHTML = "Paused";
-            //document.getElementById("Present").innerHTML = result[0];
-        }
-    );
-}
 function setSpotifyTabs(callback){
     chrome.tabs.query({url: SPOTIFY_URL},(tabs)=>{
         spotify_tabs = tabs;
@@ -38,8 +22,51 @@ function setSpotifyTabs(callback){
     });
 }
 
+function playPauseHelper(){
+    getPlayPauseStatus(function(status){
+        if(status=="Play") setPlayPause("Pause");
+        else setPlayPause("Play");
+    });
+}
+
+function playPause(){
+    chrome.tabs.executeScript(
+        spotify_tabs[0].id,
+        {
+            code: `document.querySelector('${selectors.play}').click()`,
+        },
+        function(result){
+            playPauseHelper();
+        }
+    );
+    
+}
+function getPlayPauseStatus(callback){
+    chrome.tabs.executeScript(
+        spotify_tabs[0].id,
+        {
+            code: `document.querySelector('${selectors.play}').className`,
+        },
+        (result)=>{
+            var status="";
+            if(result[0].includes("pause") ) status="Pause"
+            else status = "Play";
+            callback(status);
+        }
+    );
+}
+
+function setPlayPause(status){
+    document.getElementById("play-pause").innerHTML = String(status);
+}
+
+function initialisePlayPause(){
+    getPlayPauseStatus(setPlayPause);
+}
+
 document.addEventListener("DOMContentLoaded", function(){
     setSpotifyTabs(function(){
-        document.getElementById("Check").addEventListener("click",playPause);
+        initialisePlayPause();
+        document.getElementById("play-pause").addEventListener("click",playPause);
     });
   });
