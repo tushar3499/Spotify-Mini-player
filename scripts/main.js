@@ -21,6 +21,9 @@ selectors = {
     "#main .Root__now-playing-bar .now-playing-bar__left .now-playing .control-button-wrapper button.control-button",
     track:
     '#main .Root__now-playing-bar .now-playing-bar__left .now-playing span a[href^="/album/"]',
+    artist:
+    '#main .Root__now-playing-bar .now-playing-bar__left .now-playing span a[href^="/artist/"]',
+
 }
 var spotify_tabs = [];
 
@@ -231,11 +234,29 @@ function changeTrackName(callback){
     );
 }
 
+function changeArtistName(callback){
+    chrome.tabs.executeScript(
+        spotify_tabs[0].id,
+        {
+            code: getHTMLCode(selectors.artist),
+        },
+        (result)=>{
+            callback(result[0]);
+        }
+    );
+}
+
 function setTrackName(track){
     document.getElementById("track-name").innerHTML = String(track);
 }
+
+function setArtistName(artist){
+    document.getElementById("artist-name").innerHTML = String(artist);
+}
+
 function DisplayTrackDetails(){
     changeTrackName(setTrackName);
+    changeArtistName(setArtistName);
 }
 
 function InitialiseExtension(){
