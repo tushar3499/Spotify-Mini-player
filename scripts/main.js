@@ -19,13 +19,15 @@ selectors = {
     "#main .Root__now-playing-bar .now-playing-bar__center .player-controls__buttons button.spoticon-shuffle-16",
     like:
     "#main .Root__now-playing-bar .now-playing-bar__left .now-playing .control-button-wrapper button.control-button",
+    track:
+    '#main .Root__now-playing-bar .now-playing-bar__left .now-playing span a[href^="/album/"]',
 }
 var spotify_tabs = [];
 
 function setSpotifyTabs(callback){
     chrome.tabs.query({url: SPOTIFY_URL},(tabs)=>{
         spotify_tabs = tabs;
-        document.getElementById("Present").innerHTML = spotify_tabs.length;
+        //document.getElementById("Present").innerHTML = spotify_tabs.length;
         callback();
     });
 }
@@ -44,6 +46,12 @@ function getClassCode(param){
     var code = `document.querySelector('${param}').className`;
     return code;
 }
+
+function getHTMLCode(param){
+    var code = `document.querySelector('${param}').innerHTML`;
+    return code;
+}
+
 
 //------Play Pause functions------------------------------------------
 
@@ -211,13 +219,34 @@ function likeHelper(){
 
 //---------------------------------------------------------------------------------
 
+function changeTrackName(callback){
+    chrome.tabs.executeScript(
+        spotify_tabs[0].id,
+        {
+            code: getHTMLCode(selectors.track),
+        },
+        (result)=>{
+            callback(result[0]);
+        }
+    );
+}
+
+function setTrackName(track){
+    document.getElementById("track-name").innerHTML = String(track);
+}
+function DisplayTrackDetails(){
+    changeTrackName(setTrackName);
+}
+
 function InitialiseExtension(){
     initialisePlayPause();
     InitialiseShuffleText();
     InitialiseLike();
+    DisplayTrackDetails();
 }
 
 function changeTrack(){
+    DisplayTrackDetails();
     getPlayPauseStatus(setPlayPause);
 }
 
