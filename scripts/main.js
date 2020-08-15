@@ -17,6 +17,8 @@ selectors = {
     "#main .Root__now-playing-bar .now-playing-bar__center .player-controls__buttons button.spoticon-skip-forward-16",
     shuffle:
     "#main .Root__now-playing-bar .now-playing-bar__center .player-controls__buttons button.spoticon-shuffle-16",
+    like:
+    "#main .Root__now-playing-bar .now-playing-bar__left .now-playing .control-button-wrapper button.control-button",
 }
 var spotify_tabs = [];
 
@@ -33,30 +35,22 @@ function getClickCode(param){
     return code;
 }
 
+function getTitleCode(param){
+    var code = `document.querySelector('${param}').title`;
+    return code;
+}
+
 function getClassCode(param){
-    var className = `document.querySelector('${param}').className`;
-    return className;
+    var code = `document.querySelector('${param}').className`;
+    return code;
 }
 
-function playPauseHelper(){
-    getPlayPauseStatus(function(status){
-        if(status=="Play") setPlayPause("Pause");
-        else setPlayPause("Play");
-    });
+//------Play Pause functions------------------------------------------
+
+function initialisePlayPause(){
+    getPlayPauseStatus(setPlayPause);
 }
 
-function playPause(){
-    chrome.tabs.executeScript(
-        spotify_tabs[0].id,
-        {
-            code: getClickCode(selectors.play_pause),
-        },
-        function(result){
-            playPauseHelper();
-        }
-    );
-    
-}
 function getPlayPauseStatus(callback){
     chrome.tabs.executeScript(
         spotify_tabs[0].id,
@@ -76,9 +70,28 @@ function setPlayPause(status){
     document.getElementById("play-pause").innerHTML = String(status);
 }
 
-function initialisePlayPause(){
-    getPlayPauseStatus(setPlayPause);
+function playPause(){
+    chrome.tabs.executeScript(
+        spotify_tabs[0].id,
+        {
+            code: getClickCode(selectors.play_pause),
+        },
+        function(result){
+            playPauseHelper();
+        }
+    );
 }
+
+function playPauseHelper(){
+    getPlayPauseStatus(function(status){
+        if(status=="Play") setPlayPause("Pause");
+        else setPlayPause("Play");
+    });
+}
+
+//--------------------------------------------------------------------------
+
+//---Previous and next functions--------------------------------------------
 
 function playNext(){
     chrome.tabs.executeScript(
@@ -104,15 +117,31 @@ function playPrevious(){
     );
 }
 
-function changeTrack(){
-    getPlayPauseStatus(setPlayPause);
+//--------------------------------------------------------------------------
+
+//---Shuffle Functions-------------------------------------------------------
+
+function InitialiseShuffleText(){
+    shuffleTextStatus(setShuffleText);
 }
 
-function shuffleHelper(){
-    shuffleTextStatus(function(status){
-        if(status=="Enable Shuffle") setShuffleText("Disable Shuffle");
-        else setShuffleText("Enable Shuffle");
-    });
+function shuffleTextStatus(callback){
+    chrome.tabs.executeScript(
+        spotify_tabs[0].id,
+        {
+            code: getClassCode(selectors.shuffle),
+        },
+        (result)=>{
+            var status="";
+            if(result[0].includes("active") ) status="Disable Shuffle";
+            else status = "Enable Shuffle";
+            callback(status);
+        }
+    );
+}
+
+function setShuffleText(status){
+    document.getElementById("shuffle").innerHTML = String(status);
 }
 
 function shuffleHandle(){
@@ -127,36 +156,78 @@ function shuffleHandle(){
     );
 }
 
-function setShuffleText(status){
-    document.getElementById("shuffle").innerHTML = String(status);
+function shuffleHelper(){
+    shuffleTextStatus(function(status){
+        if(status=="Enable Shuffle") setShuffleText("Disable Shuffle");
+        else setShuffleText("Enable Shuffle");
+    });
 }
 
-function shuffleTextStatus(callback){
+//------------------------------------------------------------------------------
+
+//---Like Functions-------------------------------------------------------------
+
+function InitialiseLike(){
+    getLikeStatus(setLikeStatus);
+}
+
+function getLikeStatus(callback){
     chrome.tabs.executeScript(
         spotify_tabs[0].id,
         {
-            code: getClassCode(selectors.shuffle),
+            code: getTitleCode(selectors.like),
         },
         (result)=>{
-            var status="";
-            if(result[0].includes("active") ) status="Disable Shuffle"
-            else status = "Enable Shuffle";
+            var status = "";
+            if(result[0].includes("Save")) status="Save";
+            else status = "Remove";
             callback(status);
         }
     );
 }
 
-function InitialiseShuffleText(){
-    shuffleTextStatus(setShuffleText);
+function setLikeStatus(status){
+    document.getElementById("like").innerHTML = String(status);
+}
+
+function likeHandle(){
+    chrome.tabs.executeScript(
+        spotify_tabs[0].id,
+        {
+            code: getClickCode(selectors.like),
+        },
+        function(result){
+            likeHelper();
+        }
+    );
+}
+
+function likeHelper(){
+    getLikeStatus(function(status){
+        if(status.includes("Save")) setLikeStatus("Remove");
+        else setLikeStatus("Save");
+    });
+}
+
+//---------------------------------------------------------------------------------
+
+function InitialiseExtension(){
+    initialisePlayPause();
+    InitialiseShuffleText();
+    InitialiseLike();
+}
+
+function changeTrack(){
+    getPlayPauseStatus(setPlayPause);
 }
 
 document.addEventListener("DOMContentLoaded", function(){
     setSpotifyTabs(function(){
-        initialisePlayPause();
-        InitialiseShuffleText();
+        InitialiseExtension();
         document.getElementById("play-pause").addEventListener("click",playPause);
         document.getElementById("next").addEventListener("click",playNext);
         document.getElementById("previous").addEventListener("click",playPrevious);
         document.getElementById("shuffle").addEventListener("click",shuffleHandle);
+        document.getElementById("like").addEventListener("click",likeHandle);
     });
   });
