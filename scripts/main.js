@@ -8,7 +8,6 @@
 SPOTIFY_URL = "https://open.spotify.com/*";
 
 selectors = {
-    albumArt: ".cover-art img.cover-art-image",
     play_pause:
     "#main .Root__now-playing-bar .now-playing-bar__center .player-controls__buttons button.control-button--circled",
     previous:
@@ -23,7 +22,7 @@ selectors = {
     '#main .Root__now-playing-bar .now-playing-bar__left .now-playing span a[href^="/album/"]',
     artist:
     '#main .Root__now-playing-bar .now-playing-bar__left .now-playing span a[href^="/artist/"]',
-
+    cover: ".cover-art img.cover-art-image",
 }
 var spotify_tabs = [];
 
@@ -257,6 +256,7 @@ function setArtistName(artist){
 function DisplayTrackDetails(){
     changeTrackName(setTrackName);
     changeArtistName(setArtistName);
+    changeTrackCover(setTrackCover);
 }
 
 function InitialiseExtension(){
@@ -269,6 +269,23 @@ function InitialiseExtension(){
 function changeTrack(){
     DisplayTrackDetails();
     getPlayPauseStatus(setPlayPause);
+}
+
+function changeTrackCover(callback){
+    chrome.tabs.executeScript(
+        spotify_tabs[0].id,
+        {
+            code: `document.querySelector('${selectors.cover}').src`,
+        },
+        (result)=>{
+            //console.log(result);
+            callback(result[0]);
+        }
+    );
+}
+
+function setTrackCover(cover){
+    document.getElementById("track-cover").src = String(cover);
 }
 
 document.addEventListener("DOMContentLoaded", function(){
