@@ -6,7 +6,7 @@ var scopes = "user-read-private user-read-email playlist-read-private";
 var code = null;
 
 var new_tab;
-var get_url = "https://accounts.spotify.com/authorize?client_id=b69b038fdd164181b886e470d07cf52e&response_type=code&redirect_uri="+redirect_uri+"&scope=user-read-private%20user-read-email%20playlist-read-private&state=34fFs29kd09"
+var get_url = "https://accounts.spotify.com/authorize?client_id=b69b038fdd164181b886e470d07cf52e&response_type=code&redirect_uri="+redirect_uri+"&scope=user-read-private%20user-read-email%20playlist-read-private%20playlist-modify-public%20playlist-modify-private&state=34fFs29kd09"
 
 chrome.runtime.onInstalled.addListener(function() {
     chrome.tabs.create({'url': get_url}, function(tab) {
